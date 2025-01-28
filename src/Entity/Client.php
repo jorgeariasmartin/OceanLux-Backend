@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ClientRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -31,9 +33,8 @@ class Client
     #[ORM\Column(name:"address",length: 400,nullable: false)]
     private ?string $address;
 
-    #[ORM\OneToOne(inversedBy: 'client_id', targetEntity: UserAccount::class)]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id')]
-    private ?UserAccount $userAccount = null;
+    #[ORM\OneToMany(targetEntity: UserAccount::class, mappedBy: "client")]
+    private Collection $userAccounts;
 
     #[ORM\Column]
     private ?int $phone_number = null;
@@ -71,7 +72,18 @@ class Client
     {
         return $this->birthdate;
     }
+    #[ORM\OneToOne(targetEntity: UserAccount::class, mappedBy: 'client', cascade: ['persist', 'remove'])]
+    private UserAccount $userAccount;
+    public function getUserAccount(): ?UserAccount
+    {
+        return $this->userAccount;
+    }
 
+    public function setUserAccount(?UserAccount $userAccount): self
+    {
+        $this->userAccount = $userAccount;
+        return $this;
+    }
     public function setBirthdate(\DateTimeInterface $birthdate): static
     {
         $this->birthdate = $birthdate;
