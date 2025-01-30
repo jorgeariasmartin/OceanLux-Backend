@@ -6,12 +6,86 @@
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/
+.env
 /vendor/
 /.env /
 /.env.dev
 /OceanLux-Backend.iml .idea
 ###< symfony/framework-bundle ###
+# Ignorar archivos de entorno de Symfony
+.env.local
+.env.*.local
+
+# Ignorar configuraciones del IDE
+.idea/
+*.iml
+workspace.xml
+
+# Ignorar archivos innecesarios de Symfony
+/var/
+/vendor/
+/node_modules/
+/public/bundles/
 
 ###> lexik/jwt-authentication-bundle ###
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
+
+# 🚀 Archivos de entorno (contienen credenciales y configuraciones sensibles)
+.env
+.env.local
+.env.*.local
+.env.dev
+.env.dev.local
+.env.production
+.env.test
+.env.test.local
+
+# 🚀 Dependencias de Composer (se regeneran con `composer install`)
+/vendor/
+
+# 🚀 Caché y logs de Symfony (se regeneran automáticamente)
+/var/
+
+# 🚀 Archivos de depuración y profiling
+*.prof
+
+# 🚀 Configuración de PHPStorm/WebStorm (IDE)
+/.idea/
+*.iml
+workspace.xml
+
+# 🚀 Archivos de NetBeans IDE
+/nbproject/
+
+# 🚀 Archivos de VS Code (configuración local del editor)
+/.vscode/
+
+# 🚀 Archivos del sistema operativo (macOS, Linux, Windows)
+.DS_Store
+Thumbs.db
+
+# 🚀 Dependencias de Node.js (para proyectos con Webpack Encore)
+/node_modules/
+/public/build/
+/public/bundles/
+
+# 🚀 Archivos de PHPUnit (pruebas y cobertura)
+/phpunit.xml
+/phpunit.xml.dist
+/tests/.phpunit.result.cache
+/coverage/
+
+# 🚀 Configuración de Docker y contenedores (si usas Docker)
+/docker/
+/docker-compose.yml
+/.dockerignore
+
+# 🚀 Archivos de despliegue y dependencias externas
+/.env.local.php
+/composer.lock
+/symfony.lock
+
+# 🚀 Carpeta de archivos temporales
+/tmp/
+

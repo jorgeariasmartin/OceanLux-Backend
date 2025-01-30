@@ -1,7 +1,7 @@
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
-        schema_filter: 'OceanLux'
+        schema_filter: 'oceanlux'
         server_version: '17.2'
 
         # IMPORTANT: You MUST configure your server version,
