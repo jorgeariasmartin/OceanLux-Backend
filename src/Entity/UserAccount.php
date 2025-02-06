@@ -29,7 +29,7 @@ class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name:"password", length: 250)]
     private ?string $password = null;
 
-    #[ORM\OneToOne(inversedBy: 'userAccount', targetEntity: Client::class, cascade: ['persist'])]
+    #[ORM\OneToOne(targetEntity: Client::class, inversedBy: 'userAccount', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
     private Client $client;
 
