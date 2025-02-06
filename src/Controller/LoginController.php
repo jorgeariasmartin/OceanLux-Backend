@@ -31,27 +31,26 @@ class LoginController extends AbstractController
     public function checkLogin(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $username = $data['username'] ?? '';
-        $password = $data['password'] ?? '';
 
-        $this->logger->info('Checking login for username: ' . $username);
+        dump($data); // 👀 Verifica qué datos recibe el backend
+        $this->logger->info('Datos recibidos:', $data); // Log en Symfony
 
-        $user = $this->userAccountRepository->findOneBy(['username' => $username]);
+        if (!isset($data['username']) || !isset($data['password'])) {
+            return new JsonResponse(['code' => 400, 'message' => 'Faltan credenciales.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user = $this->userAccountRepository->findOneBy(['username' => $data['username']]);
 
         if (!$user) {
-            $this->logger->warning('User not found: ' . $username);
-            return new JsonResponse(['code' => 401, 'message' => 'Invalid credentials.'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['code' => 401, 'message' => 'Usuario no encontrado.'], Response::HTTP_UNAUTHORIZED);
         }
 
-        if (!$this->passwordHasher->isPasswordValid($user, $password)) {
-            $this->logger->warning('Invalid password for user: ' . $username);
-            return new JsonResponse(['code' => 401, 'message' => 'Invalid credentials.'], Response::HTTP_UNAUTHORIZED);
+        if (!$this->passwordHasher->isPasswordValid($user, $data['password'])) {
+            return new JsonResponse(['code' => 401, 'message' => 'Contraseña incorrecta.'], Response::HTTP_UNAUTHORIZED);
         }
-
-        $this->logger->info('User authenticated: ' . $username);
 
         $token = $this->jwtManager->create($user);
-
         return new JsonResponse(['token' => $token]);
     }
+
 }
