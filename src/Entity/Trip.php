@@ -7,7 +7,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
-use Symfony\Component\Serializer\Attribute\MaxDepth;
 
 #[ORM\Entity(repositoryClass: TripRepository::class)]
 #[ORM\Table(name: 'trip', schema: 'oceanlux')]
@@ -45,7 +44,7 @@ class Trip
 
     #[ORM\ManyToOne(targetEntity: Yacht::class, inversedBy: 'trips')]
     #[ORM\JoinColumn(name:"yacht_id", referencedColumnName: "id", nullable: false)]
-    #[Ignore]
+    #[Groups(['trip:read'])]
     private ?Yacht $yacht = null;
 
     #[Groups(['trip:read', 'yacht:trips'])]
@@ -126,7 +125,7 @@ class Trip
         return $this;
     }
 
-    #[Groups(['trip:yacht'])]
+    #[Groups(['trip:read'])]
     public function getYacht(): ?Yacht
     {
         return $this->yacht;

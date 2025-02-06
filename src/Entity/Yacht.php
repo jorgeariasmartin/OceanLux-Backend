@@ -24,7 +24,7 @@ class Yacht
     private ?string $name = null;
 
     #[ORM\Column(name: "yacht_model", length: 100)]
-    #[Groups(['yacht:read'])]
+    #[Groups(['yacht:read', 'trip:read'])]
     private ?string $model = null;
 
     #[ORM\Column(name: "image", type: 'string', length: 255)]
