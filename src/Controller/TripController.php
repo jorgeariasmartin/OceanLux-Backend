@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use App\Repository\YachtRepository;
 
 #[Route('/trip')]
@@ -29,6 +29,7 @@ final class TripController extends AbstractController
     }
 
     #[Route('/create', name: 'trip_create', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function create(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, YachtRepository $yachtRepository, SerializerInterface $serializer): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -38,7 +39,7 @@ final class TripController extends AbstractController
         }
 
         try {
-            $yacht = $yachtRepository->find($data['yacht']['id']); // Cambié `yacht_id` por `yacht.id`
+            $yacht = $yachtRepository->find($data['yacht']['id']);
             if (!$yacht) {
                 return new JsonResponse(['error' => 'Yacht not found'], Response::HTTP_BAD_REQUEST);
             }
@@ -65,6 +66,7 @@ final class TripController extends AbstractController
     }
 
     #[Route('/{id}', name: 'trip_delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(Trip $trip, EntityManagerInterface $entityManager): JsonResponse
     {
         $entityManager->remove($trip);
@@ -74,6 +76,7 @@ final class TripController extends AbstractController
     }
 
     #[Route('/{id}', name: 'trip_update', methods: ['PUT'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function update(int $id, Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, YachtRepository $yachtRepository, SerializerInterface $serializer): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
