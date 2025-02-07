@@ -22,7 +22,8 @@ security:
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/trip/create/, roles: ROLE_ADMIN }
+        - { path: ^/trip/create, roles: ROLE_ADMIN }
+        - { path: ^/trip/\d+, roles: ROLE_ADMIN }
 
 when@test:
     security:
