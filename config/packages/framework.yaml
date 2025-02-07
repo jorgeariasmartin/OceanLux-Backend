@@ -10,6 +10,6 @@ framework:
 
 when@test:
     framework:
-        test: true
+        error_controller: 'Symfony\Bundle\FrameworkBundle\Controller\ErrorController::show'
         session:
             storage_factory_id: session.storage.factory.mock_file

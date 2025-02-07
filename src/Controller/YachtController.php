@@ -11,13 +11,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[Route('/yacht')]
 final class YachtController extends AbstractController
 {
-    #[Route('/all', name: 'yacht_all', methods: ['GET'])]
+    #[Route('/all', name: 'yacht_all', methods: ['GET', 'POST'])]
     public function getAll(YachtRepository $yachtRepository, SerializerInterface $serializer): JsonResponse
     {
         $yachts = $yachtRepository->findAll();
-        $yachts = $serializer->serialize($yachts, 'json');
+        $yachts = $serializer->serialize($yachts, 'json', ['groups' => ['yacht:read']]);
 
         return new JsonResponse($yachts, 200, [], true);
     }
-
 }
+// Compare this snippet from src/Controller/YachtController.php:

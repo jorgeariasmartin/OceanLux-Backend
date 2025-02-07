@@ -33,8 +33,9 @@ class Client
     #[ORM\Column(name:"address",length: 400,nullable: false)]
     private ?string $address;
 
-    #[ORM\OneToMany(targetEntity: UserAccount::class, mappedBy: "client")]
-    private Collection $userAccounts;
+    #[ORM\OneToOne(targetEntity: UserAccount::class, mappedBy: 'client', cascade: ['persist', 'remove'])]
+    private ?UserAccount $userAccount = null;
+
 
     #[ORM\Column]
     private ?int $phone_number = null;
@@ -72,8 +73,7 @@ class Client
     {
         return $this->birthdate;
     }
-    #[ORM\OneToOne(targetEntity: UserAccount::class, mappedBy: 'client', cascade: ['persist', 'remove'])]
-    private UserAccount $userAccount;
+    
     public function getUserAccount(): ?UserAccount
     {
         return $this->userAccount;
