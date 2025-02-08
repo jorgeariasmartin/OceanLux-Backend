@@ -33,19 +33,15 @@ class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinColumn(nullable: false)]
     private Client $client;
 
-    public function __construct()
+    public function getUserRole(): ?string
     {
-        $this->rol = Role::USER->value; // Default role
+        return $this->rol;
+
     }
 
-    public function getRol(): Role
+    public function setRol(string $rol): static
     {
-        return Role::from($this->rol);
-    }
-
-    public function setRol(Role $rol): static
-    {
-        $this->rol = $rol->value;
+        $this->rol = $rol;
         return $this;
     }
 
@@ -98,10 +94,7 @@ class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getRoles(): array
-    {
-        return ['ROLE_USER'];
-    }
+
 
     public function eraseCredentials(): void
     {
@@ -111,5 +104,10 @@ class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserIdentifier(): string
     {
         return $this->username;
+    }
+
+    public function getRoles(): array
+    {
+        return [$this->rol];
     }
 }
