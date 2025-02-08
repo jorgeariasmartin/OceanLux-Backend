@@ -14,8 +14,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use App\Repository\YachtRepository;
 
-#[Route('/trip')]
-final class TripController extends AbstractController
+#[Route('api/trip')]
+class TripController extends AbstractController
 {
     #[Route('/list', name: 'trip_list', methods: ['GET'])]
     public function list(EntityManagerInterface $entityManager): JsonResponse
@@ -29,7 +29,7 @@ final class TripController extends AbstractController
     }
 
     #[Route('/create', name: 'trip_create', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN')]
+//    #[IsGranted('ROLE_ADMIN')]
     public function create(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, YachtRepository $yachtRepository, SerializerInterface $serializer): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
