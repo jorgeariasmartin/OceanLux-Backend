@@ -37,7 +37,17 @@ class Yacht
 
     #[ORM\Column(name: "capacity", type: 'integer')]
     #[Groups(['yacht:read'])]
-    private ?int $year = null;
+    private ?int $capacity = null;
+
+    public function getCapacity(): ?int
+    {
+        return $this->capacity;
+    }
+
+    public function setCapacity(?int $capacity): void
+    {
+        $this->capacity = $capacity;
+    }
 
     #[ORM\OneToMany(targetEntity: Trip::class, mappedBy: 'yacht')]
     #[Groups(['yacht:trips'])]

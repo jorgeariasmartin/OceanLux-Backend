@@ -13,8 +13,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route('/user')]
-final class UserController extends AbstractController
+#[Route('/api/user')]
+class UserController extends AbstractController
 {
 
     #[Route('/all', name: 'user_all', methods: ['GET'])]
@@ -46,7 +46,7 @@ final class UserController extends AbstractController
         $user->setPassword($hashedPassword);
 
         // Set the default role to user
-        $user->setRol(Role::from("user"));
+        $user->setRol("ROLE_ADMIN");
 
         $em->persist($user);
         $em->flush();
