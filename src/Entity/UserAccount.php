@@ -2,41 +2,48 @@
 
 namespace App\Entity;
 
-use App\Enum\Role;
 use App\Repository\UserAccountRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use JsonSerializable;
 
 #[ORM\Entity(repositoryClass: UserAccountRepository::class)]
 #[ORM\Table(name: 'user_account', schema: 'oceanlux')]
-class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface
+class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface, JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read', 'user:write'])]
     private ?int $id = null;
 
-    #[ORM\Column(name:"username", length: 300)]
+    #[ORM\Column(name: "username", length: 300)]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $username = null;
 
-    #[ORM\Column(name:"email", length: 100)]
+    #[ORM\Column(name: "email", length: 100)]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $email = null;
 
-    #[ORM\Column(name:"rol", type: 'string', length: 255, nullable: false)]
+    #[ORM\Column(name: "rol", type: 'string', length: 255, nullable: false)]
+    #[Groups(['user:read', 'user:write'])]
     private string $rol;
 
-    #[ORM\Column(name:"password", length: 250)]
+    #[ORM\Column(name: "password", length: 250)]
+    #[Ignore] // No se serializa
     private ?string $password = null;
 
     #[ORM\OneToOne(targetEntity: Client::class, inversedBy: 'userAccount', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['user:read'])] // Solo incluir si es necesario
     private Client $client;
 
     public function getUserRole(): ?string
     {
         return $this->rol;
-
     }
 
     public function setRol(string $rol): static
@@ -94,11 +101,9 @@ class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
-
     public function eraseCredentials(): void
     {
-        // TODO: Implement eraseCredentials() method.
+        // No implementado
     }
 
     public function getUserIdentifier(): string
@@ -109,5 +114,25 @@ class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         return [$this->rol];
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'username' => $this->username,
+            'email' => $this->email,
+            'rol' => $this->rol,
+            'client' => [
+                'id' => $this->client->getId(),
+                'name' => $this->client->getName(),
+                'surname' => $this->client->getSurname(),
+                'birthdate' => $this->client->getBirthdate()?->format('Y-m-d'),
+                'dni' => $this->client->getDni(),
+                'address' => $this->client->getAddress(),
+                'phone_number' => $this->client->getPhoneNumber(),
+            ],
+        ];
+
     }
 }
