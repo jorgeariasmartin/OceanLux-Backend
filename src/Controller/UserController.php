@@ -7,11 +7,13 @@ use App\Enum\Role;
 use App\Repository\UserAccountRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 #[Route('/api/user')]
 class UserController extends AbstractController
@@ -26,14 +28,20 @@ class UserController extends AbstractController
         return new JsonResponse($users, 200, [], true);
     }
 
-    #[Route('/{id}', name: 'user_one', methods: ['GET'])]
-    public function getOne(UserAccountRepository $userAccountRepository, SerializerInterface $serializer, int $id): JsonResponse
+    #[Route('/me', name: 'user_me', methods: ['GET'])]
+    public function getAuthenticatedUser(Security $security, SerializerInterface $serializer): JsonResponse
     {
-        $user = $userAccountRepository->find($id);
-        $user = $serializer->serialize($user, 'json');
+        $user = $security->getUser();
 
-        return new JsonResponse($user, 200, [], true);
+        if (!$user) {
+            return new JsonResponse(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        $userData = $serializer->serialize($user, 'json', ['groups' => ['user:read']]);
+
+        return new JsonResponse($userData, 200, [], true);
     }
+
 
     #[Route('/create', name: 'user_create', methods: ['POST'])]
     public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): JsonResponse
