@@ -22,6 +22,10 @@ class Trip
     #[Groups(['trip:read', 'yacht:trips'])]
     private ?string $name = null;
 
+    #[ORM\Column(name: "departure", type: 'string')]
+    #[Groups(['trip:read'])]
+    private ?string $departure = null;
+
     #[ORM\Column(name:"price", type: 'float')]
     #[Groups(['trip:read'])]
     private ?float $price = null;
@@ -63,6 +67,17 @@ class Trip
     {
         $this->name = $name;
         return $this;
+    }
+
+    #[Groups(['trip:read'])]
+    public function getDeparture(): ?string
+    {
+        return $this->departure;
+    }
+
+    public function setDeparture(?string $departure): void
+    {
+        $this->departure = $departure;
     }
 
     #[Groups(['trip:read'])]

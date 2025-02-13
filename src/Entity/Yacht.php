@@ -28,15 +28,15 @@ class Yacht
     private ?string $model = null;
 
     #[ORM\Column(name: "image", type: 'string', length: 255)]
-    #[Groups(['yacht:read'])]
+    #[Groups(['yacht:read', 'trip:read'])]
     private ?string $image = null;
 
     #[ORM\Column(name: "description", type: 'string')]
-    #[Groups(['yacht:read'])]
+    #[Groups(['yacht:read', 'trip:read'])]
     private ?string $description = null;
 
     #[ORM\Column(name: "capacity", type: 'integer')]
-    #[Groups(['yacht:read'])]
+    #[Groups(['yacht:read', 'trip:read'])]
     private ?int $capacity = null;
 
     public function getCapacity(): ?int
