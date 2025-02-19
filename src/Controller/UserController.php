@@ -7,11 +7,13 @@ use App\Enum\Role;
 use App\Repository\UserAccountRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 #[Route('/api/user')]
 class UserController extends AbstractController
@@ -26,14 +28,20 @@ class UserController extends AbstractController
         return new JsonResponse($users, 200, [], true);
     }
 
-    #[Route('/{id}', name: 'user_one', methods: ['GET'])]
-    public function getOne(UserAccountRepository $userAccountRepository, SerializerInterface $serializer, int $id): JsonResponse
+    #[Route('/me', name: 'user_me', methods: ['GET'])]
+    public function getAuthenticatedUser(Security $security, SerializerInterface $serializer): JsonResponse
     {
-        $user = $userAccountRepository->find($id);
-        $user = $serializer->serialize($user, 'json');
+        $user = $security->getUser();
 
-        return new JsonResponse($user, 200, [], true);
+        if (!$user) {
+            return new JsonResponse(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        $userData = $serializer->serialize($user, 'json', ['groups' => ['user:read']]);
+
+        return new JsonResponse($userData, 200, [], true);
     }
+
 
     #[Route('/create', name: 'user_create', methods: ['POST'])]
     public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): JsonResponse
@@ -58,15 +66,64 @@ class UserController extends AbstractController
     public function update(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, int $id): JsonResponse
     {
         $data = $request->getContent();
+        // Deserializa el objeto UserAccount
         $user = $serializer->deserialize($data, UserAccount::class, 'json');
 
-        $user->setId($id);
+        // Encontrar el usuario existente
+        $existingUser = $em->getRepository(UserAccount::class)->find($id);
 
-        $em->persist($user);
+        if (!$existingUser) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        // Si se proporciona una nueva contraseña, se valida y actualiza
+        if ($user->getPassword()) {
+            // Si deseas validar que la contraseña antigua sea correcta, hazlo aquí
+            if ($user->getOldPassword()) {
+                // Aquí deberías implementar la lógica para verificar que la contraseña antigua es correcta.
+                // Por ejemplo, usando bcrypt:
+                if (!password_verify($user->getOldPassword(), $existingUser->getPassword())) {
+                    return new JsonResponse(['error' => 'La contraseña antigua no es correcta'], 400);
+                }
+            }
+
+            // Actualiza la contraseña con la nueva
+            $existingUser->setPassword(password_hash($user->getPassword(), PASSWORD_BCRYPT));
+        }
+
+        // Solo actualiza los campos si están presentes
+        if ($user->getUsername()) {
+            $existingUser->setUsername($user->getUsername());
+        }
+        if ($user->getEmail()) {
+            $existingUser->setEmail($user->getEmail());
+        }
+
+        // Aquí puedes continuar con la actualización de otros campos, como el cliente (Client)
+        if ($user->getClient()) {
+            $client = $existingUser->getClient();
+            if ($user->getClient()->getPhoneNumber()) {
+                $client->setPhoneNumber($user->getClient()->getPhoneNumber());
+            }
+            if ($user->getClient()->getName()) {
+                $client->setName($user->getClient()->getName());
+            }
+            if ($user->getClient()->getSurname()) {
+                $client->setSurname($user->getClient()->getSurname());
+            }
+            if ($user->getClient()->getAddress()) {
+                $client->setAddress($user->getClient()->getAddress());
+            }
+            $em->persist($client);
+        }
+
+        // Persistir el usuario actualizado
+        $em->persist($existingUser);
         $em->flush();
 
-        return new JsonResponse('User updated', 200, []);
+        return new JsonResponse('User updated', 200);
     }
+
 
     #[Route('/delete/{id}', name: 'user_delete', methods: ['DELETE'])]
     public function delete(UserAccountRepository $userRepository, EntityManagerInterface $em, int $id): JsonResponse
@@ -78,6 +135,48 @@ class UserController extends AbstractController
 
         return new JsonResponse('User deleted', 200, []);
     }
+
+    #[Route('/change-password', name: 'user_change_password', methods: ['PUT'])]
+    public function changePassword(
+        Request $request,
+        Security $security,
+        UserPasswordHasherInterface $passwordHasher,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $user = $security->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $oldPassword = $data['oldPassword'] ?? '';
+        $newPassword = $data['newPassword'] ?? '';
+        $confirmPassword = $data['confirmPassword'] ?? '';
+
+        // Verificar que la nueva contraseña y la confirmación coincidan
+        if ($newPassword !== $confirmPassword) {
+            return new JsonResponse(['error' => 'Las contraseñas no coinciden'], 400);
+        }
+
+        // Verificar que la contraseña antigua sea correcta
+        if (!$passwordHasher->isPasswordValid($user, $oldPassword)) {
+            return new JsonResponse(['error' => 'La contraseña antigua es incorrecta'], 400);
+        }
+
+        // Encriptar la nueva contraseña
+        $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
+
+        // Establecer la nueva contraseña
+        $user->setPassword($hashedPassword);
+
+        // Persistir el usuario con la nueva contraseña
+        $em->persist($user);
+        $em->flush();
+
+        return new JsonResponse(['message' => 'Contraseña cambiada correctamente'], 200);
+    }
+
 
 }
 

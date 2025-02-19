@@ -42,6 +42,25 @@ class TripController extends AbstractController
     }
 
 
+    #[Route('/{id}', name: 'trip_show', methods: ['GET'])]
+    public function show(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Buscar el trip por su ID
+        $trip = $entityManager->getRepository(Trip::class)->find($id);
+
+        // Si no se encuentra el trip, devolver un error 404
+        if (!$trip) {
+            return $this->json([
+                'message' => 'Trip not found',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        // Si el trip existe, devolverlo en la respuesta
+        return $this->json($trip, Response::HTTP_OK, [], [
+            'groups' => ['trip:read'],
+        ]);
+    }
+
     #[Route('/create', name: 'trip_create', methods: ['POST'])]
 //    #[IsGranted('ROLE_ADMIN')]
     public function create(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, YachtRepository $yachtRepository, SerializerInterface $serializer): JsonResponse
