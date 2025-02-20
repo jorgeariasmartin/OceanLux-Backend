@@ -81,6 +81,7 @@ class TripController extends AbstractController
             $trip->setName($data['name']);
             $trip->setPrice((float)$data['price']);
             $trip->setDurationHours((int)$data['duration_hours']);
+            $trip->setDeparture($data['departure']);
             $trip->setDescription($data['description']);
             $trip->setStartdate(new \DateTime($data['startdate']));
             $trip->setEnddate(new \DateTime($data['enddate']));
@@ -133,6 +134,7 @@ class TripController extends AbstractController
             $trip->setPrice((float)$data['price']);
             $trip->setDurationHours((int)$data['duration_hours']);
             $trip->setDescription($data['description']);
+            $trip->setDeparture($data['departure']);
             $trip->setStartdate(new \DateTime($data['startdate']));
             $trip->setEnddate(new \DateTime($data['enddate']));
             $trip->setYacht($yacht);
