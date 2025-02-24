@@ -76,6 +76,17 @@ class UserController extends AbstractController
             return new JsonResponse(['error' => 'User not found'], 404);
         }
 
+        // Verificar si el nombre de usuario está siendo cambiado
+        if ($user->getUsername() && $user->getUsername() !== $existingUser->getUsername()) {
+            // Verificar si ya existe otro usuario con el mismo nombre de usuario
+            $duplicateUser = $em->getRepository(UserAccount::class)->findOneBy(['username' => $user->getUsername()]);
+
+            if ($duplicateUser) {
+                // Si existe un usuario con el mismo nombre, retornar un error
+                return new JsonResponse(['error' => 'El nombre de usuario ya está en uso'], 400);
+            }
+        }
+
         // Si se proporciona una nueva contraseña, se valida y actualiza
         if ($user->getPassword()) {
             // Si deseas validar que la contraseña antigua sea correcta, hazlo aquí
