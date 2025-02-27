@@ -78,4 +78,27 @@ final class BookingController extends AbstractController
 
         return new JsonResponse($reservationsData);
     }
+
+    #[Route('/delete/{id}', name: 'app_booking_delete', methods: ['DELETE'])]
+    public function deleteBooking(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Buscar la reserva por su id
+        $booking = $entityManager->getRepository(Booking::class)->find($id);
+
+        // Verificar si la reserva existe
+        if (!$booking) {
+            return new JsonResponse(['error' => 'Booking not found'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Actualizar el estado de la reserva a CANCELLED (2)
+        $booking->setStatus(BookingStatus::CANCELLED);
+
+        // Persistir los cambios en la base de datos
+        $entityManager->persist($booking);
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'Booking status updated to CANCELLED'], JsonResponse::HTTP_OK);
+    }
+
+
 }
