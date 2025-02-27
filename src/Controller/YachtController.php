@@ -30,11 +30,9 @@ class YachtController extends AbstractController
             $yacht = new Yacht();
             $yacht->setName($data['name']);
             $yacht->setModel($data['model']);
-            $yacht->setImage($data['Image']);
+            $yacht->setImage($data['image']);
             $yacht->setDescription($data['description']);
             $yacht->setCapacity((int)$data['capacity']);
-
-
 
             $entityManager->persist($yacht);
             $entityManager->flush();
@@ -54,7 +52,7 @@ class YachtController extends AbstractController
         return new JsonResponse($yachts, 200, [], true);
     }
 
-    #[Route('update/{id}', name: 'yacht_update', methods: ['PUT'])]
+    #[Route('/update/{id}', name: 'yacht_update', methods: ['PUT'])]
     public function update($id, Request $request, EntityManagerInterface $entityManager, YachtRepository $yachtRepository, SerializerInterface $serializer): JsonResponse
     {
         $data = json_decode($request->getContent(), true);

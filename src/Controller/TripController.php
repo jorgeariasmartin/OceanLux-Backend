@@ -125,10 +125,15 @@ class TripController extends AbstractController
                 return new JsonResponse(['error' => 'Trip not found'], Response::HTTP_NOT_FOUND);
             }
 
-            $yacht = $yachtRepository->find($data['yacht']['id']);
-            if (!$yacht) {
-                return new JsonResponse(['error' => 'Yacht not found'], Response::HTTP_BAD_REQUEST);
+            if (isset($data['yacht']['id'])) {
+                $yacht = $yachtRepository->find($data['yacht']['id']);
+                if (!$yacht) {
+                    return new JsonResponse(['error' => 'Yacht not found'], Response::HTTP_BAD_REQUEST);
+                }
+            } else {
+                return new JsonResponse(['error' => 'Yacht ID is required'], Response::HTTP_BAD_REQUEST);
             }
+
 
             $trip->setName($data['name']);
             $trip->setPrice((float)$data['price']);
