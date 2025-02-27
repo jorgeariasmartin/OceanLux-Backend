@@ -17,7 +17,7 @@ class Booking
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(name:"booking_date",type: Types::DATE_MUTABLE)]
+    #[ORM\Column(name:"booking_date", type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $booking_date = null;
 
     #[ORM\Column(name:"number_of_guest",type: Types::INTEGER)]
@@ -29,8 +29,8 @@ class Booking
     #[ORM\Column(name:"status",type: 'string', enumType: BookingStatus::class)]
     private BookingStatus $status;
 
-    #[ORM\Column(name:"password",type: Types::FLOAT)]
-    private ?float $rate = null;
+    #[ORM\Column(name:"rate", type: Types::FLOAT, nullable: true)]
+    private ?float $rate = 0;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(name:"user_id",nullable: false)]
