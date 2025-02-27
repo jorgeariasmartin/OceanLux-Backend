@@ -1,0 +1,81 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Booking;
+use App\Entity\Trip;
+use App\Entity\UserAccount;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Attribute\Route;
+use App\Enum\BookingStatus;
+
+
+#[Route('api/booking')]
+final class BookingController extends AbstractController
+{
+    #[Route('/create', name: 'app_booking', methods: ['POST'])]
+    public function createBooking(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        // Validar datos requeridos
+        if (!isset($data['booking_date'], $data['number_of_guest'], $data['total_price'], $data['user_id'], $data['trip_id'])) {
+            return new JsonResponse(['error' => 'Missing required fields'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Buscar Usuario y Viaje en la base de datos
+        $user = $entityManager->getRepository(UserAccount::class)->find($data['user_id']);
+        $trip = $entityManager->getRepository(Trip::class)->find($data['trip_id']);
+
+        if (!$user || !$trip) {
+            return new JsonResponse(['error' => 'User or Trip not found'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Crear una nueva reserva con estado "pendiente" (en valor int = 0)
+        $booking = new Booking();
+        $booking->setBookingDate(new \DateTime($data['booking_date']));
+        $booking->setNumberOfGuest((int) $data['number_of_guest']);
+        $booking->setTotalPrice((float) $data['total_price']);
+        $booking->setUserId($user);
+        $booking->setTripId($trip);
+        $booking->setStatus(BookingStatus::PENDING); // Estado pendiente
+        $booking->setRate(0);  // Asegúrate de que rate esté establecido en 0 si no se proporciona
+
+        // Guardar en la base de datos
+        $entityManager->persist($booking);
+        $entityManager->flush();
+
+        return new JsonResponse([
+            'message' => 'Booking created successfully',
+            'booking_id' => $booking->getId(),
+            'status' => $booking->getStatus()->value, // Esto devolverá el valor int (0)
+            'rate' => $booking->getRate()  // Esto devolverá el valor rate (por defecto 0)
+        ], JsonResponse::HTTP_CREATED);
+    }
+
+    #[Route('/pending/{userId}', name: 'app_booking_pending_user', methods: ['GET'])]
+    public function getPendingReservations(int $userId, EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Obtener todas las reservas pendientes para un usuario
+        $reservations = $entityManager->getRepository(Booking::class)
+            ->findBy(['user_id' => $userId, 'status' => BookingStatus::PENDING]);
+
+        // Transformar las reservas a un formato adecuado para enviar al frontend
+        $reservationsData = array_map(function ($reservation) {
+            return [
+                'id' => $reservation->getId(),
+                'booking_date' => $reservation->getBookingDate()->format('Y-m-d H:i:s'),
+                'number_of_guest' => $reservation->getNumberOfGuest(),
+                'total_price' => $reservation->getTotalPrice(),
+                'status' => $reservation->getStatus(),
+                'rate' => $reservation->getRate(),
+                'trip_id' => $reservation->getTripId()->getId(),
+            ];
+        }, $reservations);
+
+        return new JsonResponse($reservationsData);
+    }
+}
