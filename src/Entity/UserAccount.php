@@ -41,6 +41,46 @@ class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface, 
     #[Groups(['user:read'])] // Solo incluir si es necesario
     private Client $client;
 
+    #[ORM\Column(name: "validation_token", type: 'string', length: 255, nullable: true)]
+    private ?string $validationToken = null;
+
+    #[ORM\Column(name: "expires_at", type: "datetime", nullable: true)]
+    private ?\DateTime $expiresAt = null;
+
+    #[ORM\Column(name:"verified",type: 'boolean', nullable: false)]
+    private bool $isVerified = false;
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): self
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
+
+    public function getExpiresAt(): ?\DateTime
+    {
+        return $this->expiresAt;
+    }
+
+    public function setExpiresAt(?\DateTime $expiresAt): void
+    {
+        $this->expiresAt = $expiresAt;
+    }
+
+    public function getValidationToken(): ?string
+    {
+        return $this->validationToken;
+    }
+
+    public function setValidationToken(?string $validationToken): void
+    {
+        $this->validationToken = $validationToken;
+    }
+
     public function getUserRole(): ?string
     {
         return $this->rol;
@@ -133,6 +173,5 @@ class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface, 
                 'phone_number' => $this->client->getPhoneNumber(),
             ],
         ];
-
     }
 }
