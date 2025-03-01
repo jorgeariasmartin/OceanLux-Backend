@@ -2,12 +2,12 @@
 
 namespace App\Enum;
 
-enum BookingStatus: string
+enum BookingStatus: int
 {
-    case PENDING = 'pending';
-    case CONFIRMED = 'confirmed';
-    case CANCELLED = 'cancelled';
-    case COMPLETED = 'completed';
+    case PENDING = 0;
+    case CONFIRMED = 1;
+    case CANCELLED = 2;
+    case COMPLETED = 3;
 }
 {
 
