@@ -3,13 +3,13 @@
 namespace App\Controller;
 
 use App\Entity\UserAccount;
-use App\Enum\Role;
 use App\Repository\UserAccountRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -43,24 +43,35 @@ class UserController extends AbstractController
     }
 
 
-    #[Route('/create', name: 'user_create', methods: ['POST'])]
-    public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    #[Route('/create', name: 'create_user', methods: ['POST'])]
+    public function createUser(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
-        $data = $request->getContent();
-        $user = $serializer->deserialize($data, UserAccount::class, 'json');
+        $data = json_decode($request->getContent(), true);
 
-        // Hash the password before saving
-        $hashedPassword = $passwordHasher->hashPassword($user, $user->getPassword());
+        if (!isset($data['password']) || empty($data['password'])) {
+            return new JsonResponse(['error' => 'Password is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user = new UserAccount();
+        $user->setEmail($data['email']);
+        $user->setUsername($data['username']);
+        $user->setRol("ROLE_USER");
+
+        $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
         $user->setPassword($hashedPassword);
 
-        // Set the default role to user
-        $user->setRol("ROLE_ADMIN");
+        $entityManager->persist($user);
+        $entityManager->flush();
 
-        $em->persist($user);
-        $em->flush();
-
-        return new JsonResponse('User created', 201, []);
+        // 🔹 Devolver el ID del usuario creado junto con el mensaje
+        return new JsonResponse([
+            'message' => 'User created successfully',
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'username' => $user->getUsername()
+        ], Response::HTTP_CREATED);
     }
+
 
     #[Route('/update/{id}', name: 'user_update', methods: ['PUT'])]
     public function update(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, int $id): JsonResponse
