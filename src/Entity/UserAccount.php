@@ -41,6 +41,22 @@ class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface, 
     #[Groups(['user:read'])] // Solo incluir si es necesario
     private Client $client;
 
+    public function __construct(Client $client)
+    {
+        $this->client = $client;
+    }
+
+    public function getClient(): Client
+    {
+        return $this->client;
+    }
+
+    public function setClient(Client $client): self
+    {
+        $this->client = $client;
+        return $this;
+    }
+
     #[ORM\Column(name: "validation_token", type: 'string', length: 255, nullable: true)]
     private ?string $validationToken = null;
 
@@ -127,17 +143,6 @@ class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface, 
     public function setPassword(string $password): static
     {
         $this->password = $password;
-        return $this;
-    }
-
-    public function getClient(): ?Client
-    {
-        return $this->client;
-    }
-
-    public function setClient(?Client $client): self
-    {
-        $this->client = $client;
         return $this;
     }
 
