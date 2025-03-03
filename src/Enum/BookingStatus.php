@@ -9,6 +9,4 @@ enum BookingStatus: int
     case CANCELLED = 2;
     case COMPLETED = 3;
 }
-{
 
-}
