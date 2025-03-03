@@ -99,6 +99,60 @@ final class BookingController extends AbstractController
 
         return new JsonResponse(['message' => 'Booking status updated to CANCELLED'], JsonResponse::HTTP_OK);
     }
+    #[Route('/update-status/{id}', name: 'app_booking_update_status', methods: ['PUT'])]
+    public function updateBookingStatus(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Buscar la reserva por su id
+        $booking = $entityManager->getRepository(Booking::class)->find($id);
 
+        // Verificar si la reserva existe
+        if (!$booking) {
+            return new JsonResponse(['error' => 'Booking not found'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Decodificar el JSON recibido
+        $data = json_decode($request->getContent(), true);
+
+        // Validar que se reciba el estado
+        if (!isset($data['status'])) {
+            return new JsonResponse(['error' => 'Missing status field'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Actualizar el estado de la reserva
+        $booking->setStatus(BookingStatus::from($data['status']));
+
+        // Guardar los cambios
+        $entityManager->persist($booking);
+        $entityManager->flush();
+
+        return new JsonResponse([
+            'message' => 'Booking status updated successfully',
+            'id' => $booking->getId(),
+            'new_status' => $booking->getStatus()
+        ], JsonResponse::HTTP_OK);
+    }
+
+    #[Route('/confirmed/{userId}', name: 'app_booking_confirmed_user', methods: ['GET'])]
+    public function getConfirmedReservations(int $userId, EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Obtener todas las reservas confirmadas para un usuario
+        $reservations = $entityManager->getRepository(Booking::class)
+            ->findBy(['user_id' => $userId, 'status' => BookingStatus::CONFIRMED]);
+
+        // Transformar las reservas a un formato adecuado para enviar al frontend
+        $reservationsData = array_map(function ($reservation) {
+            return [
+                'id' => $reservation->getId(),
+                'booking_date' => $reservation->getBookingDate()->format('Y-m-d H:i:s'),
+                'number_of_guest' => $reservation->getNumberOfGuest(),
+                'total_price' => $reservation->getTotalPrice(),
+                'status' => $reservation->getStatus(),
+                'rate' => $reservation->getRate(),
+                'trip_id' => $reservation->getTripId()->getId(),
+            ];
+        }, $reservations);
+
+        return new JsonResponse($reservationsData);
+    }
 
 }
