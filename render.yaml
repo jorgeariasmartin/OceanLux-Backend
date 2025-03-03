@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: oceanlux-backend
+    runtime: docker  # Usa Docker para desplegar
+    repo: https://github.com/raulcruzadodelgado1/OceanLux-Backend
+    region: oregon
+    plan: free
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_DEBUG
+        value: false
+      - key: DATABASE_URL
+        value: "pgsql://oceanlux_user:Ir2h1RXNwC1x0EPWpB07cKMnrwBFsbtG@dpg-cuuup4vnoe9s73ao72i0-a.oregon-postgres.render.com/oceanlux"
+      - key: FRONTEND_URL
+        value: "https://oceanlux.onrender.com"
+      - key: JWT_SECRET_KEY
+        value: "/var/www/html/config/jwt/private.pem"
+      - key: JWT_PUBLIC_KEY
+        value: "/var/www/html/config/jwt/public.pem"
+      - key: JWT_PASSPHRASE
+        value: "24dfd815a46acab50ad707768cbf64000c9df24c7efcf67c1b79bf66db9228b4"
+      - key: CORS_ALLOW_ORIGIN
+        value: "^https?://(localhost|127\.0\.0\.1|oceanlux\.onrender\.com)(:[0-9]+)?$"
+    buildCommand: "./build.sh"
+    startCommand: "php-fpm -D && nginx -g 'daemon off;'"
