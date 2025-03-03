@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Client;
 use App\Entity\UserAccount;
 use App\Repository\UserAccountRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -52,7 +53,19 @@ class UserController extends AbstractController
             return new JsonResponse(['error' => 'Password is required'], Response::HTTP_BAD_REQUEST);
         }
 
-        $user = new UserAccount();
+        if (!isset($data['client'])) {
+            return new JsonResponse(['error' => 'Client data is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $client = new Client();
+        $client->setName($data['client']['name']);
+        $client->setSurname($data['client']['surname']);
+        $client->setBirthdate(new \DateTime($data['client']['birthdate']));
+        $client->setDni($data['client']['dni']);
+        $client->setAddress($data['client']['address']);
+        $client->setPhoneNumber($data['client']['phone_number']);
+
+        $user = new UserAccount($client);
         $user->setEmail($data['email']);
         $user->setUsername($data['username']);
         $user->setRol("ROLE_USER");
@@ -60,10 +73,10 @@ class UserController extends AbstractController
         $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
         $user->setPassword($hashedPassword);
 
+        $entityManager->persist($client);
         $entityManager->persist($user);
         $entityManager->flush();
 
-        // 🔹 Devolver el ID del usuario creado junto con el mensaje
         return new JsonResponse([
             'message' => 'User created successfully',
             'id' => $user->getId(),
