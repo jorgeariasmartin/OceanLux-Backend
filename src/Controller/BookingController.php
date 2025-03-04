@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Enum\BookingStatus;
+use Symfony\Component\HttpFoundation\Response;
 
 
 #[Route('api/booking')]
@@ -130,6 +131,48 @@ final class BookingController extends AbstractController
             'id' => $booking->getId(),
             'new_status' => $booking->getStatus()
         ], JsonResponse::HTTP_OK);
+    }
+
+    #[Route('/all', name: 'app_booking_all', methods: ['GET'])]
+    public function getAllReservations(EntityManagerInterface $entityManager): JsonResponse
+    {
+        try {
+            $reservations = $entityManager->getRepository(Booking::class)->findAll();
+
+            $reservationsData = array_map(function ($reservation) {
+                return [
+                    'id' => $reservation->getId(),
+                    'booking_date' => $reservation->getBookingDate()?->format('Y-m-d H:i:s'),
+                    'number_of_guest' => $reservation->getNumberOfGuest(),
+                    'total_price' => $reservation->getTotalPrice(),
+                    'status' => $reservation->getStatus()?->name,
+                    'rate' => $reservation->getRate(),
+                    'trip' => $reservation->getTripId() ? [
+                        'id' => $reservation->getTripId()->getId(),
+                        'name' => $reservation->getTripId()->getName(),
+                        'departure' => $reservation->getTripId()->getDeparture(),
+                        'price' => $reservation->getTripId()->getPrice(),
+                        'duration_hours' => $reservation->getTripId()->getDurationHours(),
+                        'description' => $reservation->getTripId()->getDescription(),
+                        'startdate' => $reservation->getTripId()->getStartdate()?->format('Y-m-d'),
+                        'enddate' => $reservation->getTripId()->getEnddate()?->format('Y-m-d'),
+                        'yacht' => $reservation->getTripId()->getYacht() ? [
+                            'id' => $reservation->getTripId()->getYacht()->getId(),
+                            'model' => $reservation->getTripId()->getYacht()->getModel(),
+                        ] : null
+                    ] : null,
+                    'user' => $reservation->getUserId() ? [
+                        'id' => $reservation->getUserId()->getId(),
+                        'username' => $reservation->getUserId()->getUsername(),
+                        'email' => $reservation->getUserId()->getEmail(),
+                    ] : null,
+                ];
+            }, $reservations);
+
+            return new JsonResponse($reservationsData, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     #[Route('/confirmed/{userId}', name: 'app_booking_confirmed_user', methods: ['GET'])]

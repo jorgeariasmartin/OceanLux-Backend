@@ -69,6 +69,7 @@ class UserController extends AbstractController
         $user->setEmail($data['email']);
         $user->setUsername($data['username']);
         $user->setRol("ROLE_USER");
+        $user->setIsVerified(false);
 
         $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
         $user->setPassword($hashedPassword);
