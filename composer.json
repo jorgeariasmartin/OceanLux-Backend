@@ -9,7 +9,7 @@
         "php": ">=8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "api-platform/core": ">=4.0.18",
+        "api-platform/core": ">=4.1.0",
         "doctrine/dbal": "^4.2.2",
         "doctrine/doctrine-bundle": "^2.13.2",
         "doctrine/doctrine-migrations-bundle": "^3.4.1",
