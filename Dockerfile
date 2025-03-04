@@ -3,8 +3,12 @@ FROM php:8.2-fpm
 
 # Instalar dependencias del sistema y extensiones de PHP necesarias para Symfony
 RUN apt-get update && apt-get install -y \
-    unzip git libpq-dev nginx \
+    unzip git libpq-dev nginx curl \
     && docker-php-ext-install pdo pdo_pgsql
+
+# Instalar Symfony CLI
+RUN curl -sS https://get.symfony.com/cli/installer | bash && \
+    mv /root/.symfony*/bin/symfony /usr/local/bin/symfony
 
 # Configurar el directorio de trabajo dentro del contenedor
 WORKDIR /var/www/html
