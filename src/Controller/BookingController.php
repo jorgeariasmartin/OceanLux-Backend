@@ -198,4 +198,37 @@ final class BookingController extends AbstractController
         return new JsonResponse($reservationsData);
     }
 
+    #[Route('/rate/{id}', name: 'app_booking_rate', methods: ['PUT'])]
+    public function rateBooking(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Buscar la reserva por su id
+        $booking = $entityManager->getRepository(Booking::class)->find($id);
+
+        // Verificar si la reserva existe
+        if (!$booking) {
+            return new JsonResponse(['error' => 'Booking not found'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Decodificar el JSON recibido
+        $data = json_decode($request->getContent(), true);
+
+        // Validar que se reciba el rate y que esté entre 0 y 5
+        if (!isset($data['rate']) || !is_numeric($data['rate']) || $data['rate'] < 0 || $data['rate'] > 5) {
+            return new JsonResponse(['error' => 'Invalid or missing rate. Rate must be a number between 0 and 5.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Actualizar el rate de la reserva
+        $booking->setRate((float) $data['rate']);
+
+        // Guardar los cambios
+        $entityManager->persist($booking);
+        $entityManager->flush();
+
+        return new JsonResponse([
+            'message' => 'Booking rated successfully',
+            'booking_id' => $booking->getId(),
+            'new_rate' => $booking->getRate()
+        ], JsonResponse::HTTP_OK);
+    }
+
 }

@@ -155,4 +155,49 @@ class TripController extends AbstractController
         }
     }
 
+    #[Route('/{id}/ratings', name: 'trip_ratings', methods: ['GET'])]
+    public function getRatings(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $trip = $entityManager->getRepository(Trip::class)->find($id);
+
+        if (!$trip) {
+            return new JsonResponse(['error' => 'Trip not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $bookings = $trip->getBookings();
+        $totalRatings = 0;
+        $count = 0;
+
+        foreach ($bookings as $booking) {
+            if ($booking->getRate() !== null) {
+                $totalRatings += $booking->getRate();
+                $count++;
+            }
+        }
+
+        $averageRating = $count > 0 ? $totalRatings / $count : 0;
+
+        return new JsonResponse(['average_rating' => $averageRating], Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/ratings/count', name: 'trip_ratings_count', methods: ['GET'])]
+    public function getRatingsCount(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $trip = $entityManager->getRepository(Trip::class)->find($id);
+
+        if (!$trip) {
+            return new JsonResponse(['error' => 'Trip not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $bookings = $trip->getBookings();
+        $ratingsCount = 0;
+
+        foreach ($bookings as $booking) {
+            if ($booking->getRate() !== null) {
+                $ratingsCount++;
+            }
+        }
+
+        return new JsonResponse(['ratings_count' => $ratingsCount], Response::HTTP_OK);
+    }
 }
