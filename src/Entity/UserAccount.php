@@ -63,7 +63,7 @@ class UserAccount implements UserInterface, PasswordAuthenticatedUserInterface, 
     #[ORM\Column(name: "expires_at", type: "datetime", nullable: true)]
     private ?\DateTime $expiresAt = null;
 
-    #[ORM\Column(name:"verified",type: 'boolean', nullable: false)]
+    #[ORM\Column(name: "verified", type: 'boolean', nullable: false)]
     private bool $isVerified = false;
 
     public function isVerified(): bool
