@@ -187,4 +187,5 @@ final class BookingController extends AbstractController
             'new_rate' => $booking->getRate()
         ], JsonResponse::HTTP_OK);
     }
+
 }
